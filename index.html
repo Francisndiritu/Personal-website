@@ -490,27 +490,20 @@
 <section id="hero">
   <div class="coord-lines"></div>
 
-  <!-- Globe SVG -->
+<!-- Globe SVG -->
   <svg class="globe-bg globe" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <pattern id="profileImage" patternUnits="userSpaceOnUse" width="400" height="400">
-        <!-- Replace with your image path -->
-        <image
-          href=".images/francis.jpg"
-          x="0"
-          y="0"
-          width="400"
-          height="400"
-          preserveAspectRatio="xMidYMid slice"
-        />
-      </pattern>
+      <clipPath id="profileClip">
+        <circle cx="200" cy="200" r="190"/>
+      </clipPath>
     </defs>
-
-    <!-- Image inside globe -->
-    <circle cx="200" cy="200" r="190" fill="url(#profileImage)" />
-
-
-    <circle cx="200" cy="200" r="190" fill="none" stroke-width="1"/>
+    <!-- Profile image clipped to globe circle -->
+    <image href="https://media.licdn.com/dms/image/v2/D4D03AQEqZSJ6me6F9A/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1728334805981?e=1782345600&v=beta&t=ktzA3Q0_zldD9GSE6BVX82owqhPQK2Yj-FkqY-1b4vE"
+      x="10" y="10" width="380" height="380"
+      clip-path="url(#profileClip)"
+      preserveAspectRatio="xMidYMid slice"
+      style="opacity:0.45"/>
+    <circle cx="200" cy="200" r="190" stroke-width="1"/>
     <ellipse cx="200" cy="200" rx="190" ry="60" stroke-width="0.7"/>
     <ellipse cx="200" cy="200" rx="190" ry="110" stroke-width="0.7"/>
     <ellipse cx="200" cy="200" rx="80" ry="190" stroke-width="0.7"/>
