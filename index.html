@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Francis Ndiritu | Geospatial Analyst & Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030c0a;
+    --surface: #071410;
+    --card: #0b1e19;
+    --accent: #00ff9d;
+    --accent2: #00c4ff;
+    --accent3: #ffb700;
+    --text: #d4ede7;
+    --muted: #4d7a6e;
+    --border: rgba(0,255,157,0.12);
+    --glow: 0 0 40px rgba(0,255,157,0.15);
+    --mono: 'Space Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,157,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,157,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SCAN LINE ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -100%;
+    left: 0; right: 0;
+    height: 200px;
+    background: linear-gradient(transparent, rgba(0,255,157,0.03), transparent);
+    animation: scan 8s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes scan { to { top: 100%; } }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 48px;
+    background: rgba(3,12,10,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+  }
+  .nav-logo span { color: var(--text); }
+  nav ul { list-style: none; display: flex; gap: 32px; }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  nav a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 120px 48px 80px;
+    overflow: hidden;
+  }
+
+  /* Globe SVG animation */
+  .globe-bg {
+    position: absolute; right: -60px; top: 50%;
+    transform: translateY(-50%);
+    width: 600px; height: 600px;
+    opacity: 0.18;
+    animation: rotateSlow 40s linear infinite;
+  }
+  @keyframes rotateSlow { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }
+
+  /* Coordinate lines */
+  .coord-lines {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 70% 50%, rgba(0,196,255,0.06) 0%, transparent 60%),
+      radial-gradient(circle at 30% 80%, rgba(0,255,157,0.04) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 700px; }
+
+  .hero-tag {
+    display: inline-block;
+    background: rgba(0,255,157,0.08);
+    border: 1px solid rgba(0,255,157,0.25);
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  h1.hero-title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(42px, 6vw, 80px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: #fff;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  h1.hero-title em { font-style: normal; color: var(--accent); }
+
+  .hero-sub {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.8;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-coords {
+    margin-top: 32px;
+    font-size: 11px;
+    color: rgba(0,255,157,0.5);
+    letter-spacing: 0.1em;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .hero-cta {
+    margin-top: 40px;
+    display: flex; gap: 16px; flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #00e68a; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,255,157,0.3); }
+  .btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid rgba(0,255,157,0.4);
+  }
+  .btn-outline:hover { background: rgba(0,255,157,0.08); transform: translateY(-2px); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 2; padding: 100px 48px; }
+  section:nth-child(even) { background: rgba(11,30,25,0.5); }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-label::before {
+    content: '//';
+    color: var(--muted);
+  }
+
+  h2.section-title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(28px, 4vw, 48px);
+    color: #fff;
+    letter-spacing: -0.02em;
+    margin-bottom: 48px;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex; flex-wrap: wrap; gap: 0;
+    border: 1px solid var(--border);
+    margin: 0 0 80px;
+  }
+  .stat-item {
+    flex: 1; min-width: 160px;
+    padding: 28px 32px;
+    border-right: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item:hover { background: rgba(0,255,157,0.04); }
+  .stat-num {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .stat-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
+
+  /* ── SKILLS GRID ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 64px;
+  }
+  .skill-chip {
+    background: var(--card);
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 12px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .skill-chip:hover { background: rgba(0,255,157,0.07); }
+  .skill-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .skill-dot.blue { background: var(--accent2); box-shadow: 0 0 8px var(--accent2); }
+  .skill-dot.yellow { background: var(--accent3); box-shadow: 0 0 8px var(--accent3); }
+  .skill-name { font-size: 12px; color: var(--text); }
+
+  /* ── EXPERIENCE ── */
+  .exp-list { display: flex; flex-direction: column; gap: 2px; }
+  .exp-item {
+    background: var(--card);
+    border-left: 3px solid transparent;
+    padding: 32px 36px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .exp-item::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,255,157,0.04), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .exp-item:hover { border-left-color: var(--accent); }
+  .exp-item:hover::before { opacity: 1; }
+  .exp-item.active { border-left-color: var(--accent); background: rgba(0,255,157,0.04); }
+  .exp-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .exp-role {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+  }
+  .exp-org { font-size: 12px; color: var(--accent); margin-top: 4px; }
+  .exp-period {
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.4);
+    padding: 6px 12px;
+    flex-shrink: 0;
+  }
+  .exp-country {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-top: 8px;
+  }
+  .exp-country::before { content: '◉'; font-size: 8px; color: var(--accent2); }
+  .exp-details {
+    margin-top: 20px;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+  .exp-item.active .exp-details { display: block; }
+  .exp-details ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .exp-details li {
+    font-size: 12px; color: #8ab8ae;
+    padding-left: 20px; position: relative; line-height: 1.7;
+  }
+  .exp-details li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+
+  /* ── PROJECTS ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2px;
+  }
+  .project-card {
+    background: var(--card);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: all 0.3s;
+    border-top: 2px solid transparent;
+  }
+  .project-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .project-card:hover { background: rgba(0,255,157,0.04); border-top-color: var(--accent); }
+  .project-card:hover::after { transform: scaleX(1); }
+  .project-num {
+    font-size: 10px; color: rgba(0,255,157,0.3);
+    letter-spacing: 0.2em; margin-bottom: 16px;
+  }
+  .project-title {
+    font-family: var(--display);
+    font-weight: 700; font-size: 17px; color: #fff;
+    line-height: 1.3; margin-bottom: 12px;
+  }
+  .project-client {
+    font-size: 10px; color: var(--accent2);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .project-desc { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 4px 10px;
+    background: rgba(0,255,157,0.07);
+    color: var(--accent); border: 1px solid rgba(0,255,157,0.15);
+  }
+  .tag.blue { background: rgba(0,196,255,0.07); color: var(--accent2); border-color: rgba(0,196,255,0.15); }
+  .tag.yellow { background: rgba(255,183,0,0.07); color: var(--accent3); border-color: rgba(255,183,0,0.15); }
+
+  /* ── EDUCATION ── */
+  .edu-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2px;
+  }
+  .edu-card {
+    background: var(--card); padding: 28px;
+    border-bottom: 2px solid var(--border);
+    transition: border-color 0.2s;
+  }
+  .edu-card:hover { border-bottom-color: var(--accent); }
+  .edu-degree { font-family: var(--display); font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 6px; }
+  .edu-inst { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
+  .edu-date { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+
+  /* ── LANGUAGES ── */
+  .lang-bar { display: flex; gap: 32px; flex-wrap: wrap; margin-top: 32px; }
+  .lang-item { display: flex; flex-direction: column; gap: 8px; }
+  .lang-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text); }
+  .lang-dots { display: flex; gap: 4px; }
+  .lang-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .lang-dot.empty { background: rgba(0,255,157,0.15); box-shadow: none; }
+
+  /* ── CONTACT ── */
+  .contact-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2px;
+  }
+  .contact-item {
+    background: var(--card); padding: 28px 32px;
+    display: flex; align-items: center; gap: 16px;
+    transition: background 0.2s;
+  }
+  .contact-item:hover { background: rgba(0,255,157,0.06); }
+  .contact-icon {
+    width: 40px; height: 40px;
+    background: rgba(0,255,157,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .contact-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px; }
+  .contact-value { font-size: 13px; color: var(--text); word-break: break-all; }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative; z-index: 2;
+    text-align: center; padding: 48px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  footer span { color: var(--accent); }
+
+  /* ── CURSOR DOT ── */
+  .cursor {
+    position: fixed; pointer-events: none; z-index: 9999;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s, opacity 0.2s;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+  /* ── GLOBE SVG ── */
+  svg.globe circle { stroke: rgba(0,255,157,0.6); fill: none; }
+  svg.globe line { stroke: rgba(0,255,157,0.35); }
+  svg.globe .dot { fill: var(--accent); }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    nav ul { gap: 16px; }
+    section { padding: 60px 20px; }
+    #hero { padding: 100px 20px 60px; }
+    .globe-bg { width: 300px; height: 300px; right: -80px; opacity: 0.1; }
+    .stats-bar { flex-direction: column; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .stat-item:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">FN<span>T</span></a>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="coord-lines"></div>
+
+  <!-- Globe SVG -->
+  <svg class="globe-bg globe" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="profileImage" patternUnits="userSpaceOnUse" width="400" height="400">
+        <!-- Replace with your image path -->
+        <image
+          href=".images/francis.jpg"
+          x="0"
+          y="0"
+          width="400"
+          height="400"
+          preserveAspectRatio="xMidYMid slice"
+        />
+      </pattern>
+    </defs>
+
+    <!-- Image inside globe -->
+    <circle cx="200" cy="200" r="190" fill="url(#profileImage)" />
+
+
+    <circle cx="200" cy="200" r="190" fill="none" stroke-width="1"/>
+    <ellipse cx="200" cy="200" rx="190" ry="60" stroke-width="0.7"/>
+    <ellipse cx="200" cy="200" rx="190" ry="110" stroke-width="0.7"/>
+    <ellipse cx="200" cy="200" rx="80" ry="190" stroke-width="0.7"/>
+    <ellipse cx="200" cy="200" rx="140" ry="190" stroke-width="0.7"/>
+    <line x1="10" y1="200" x2="390" y2="200" stroke-width="0.7"/>
+    <line x1="200" y1="10" x2="200" y2="390" stroke-width="0.7"/>
+    <line x1="10" y1="140" x2="390" y2="140" stroke-width="0.5"/>
+    <line x1="10" y1="260" x2="390" y2="260" stroke-width="0.5"/>
+    <line x1="10" y1="80" x2="390" y2="80" stroke-width="0.3"/>
+    <line x1="10" y1="320" x2="390" y2="320" stroke-width="0.3"/>
+    <!-- Kenya marker -->
+    <circle class="dot" cx="232" cy="218" r="5"/>
+    <circle cx="232" cy="218" r="12" stroke="rgba(0,255,157,0.4)" fill="none" stroke-width="1">
+      <animate attributeName="r" from="8" to="22" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" from="0.6" to="0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Somalia marker -->
+    <circle class="dot" cx="252" cy="205" r="3" fill="#00c4ff"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-tag">🛰 Geospatial Analyst &amp; Developer</div>
+    <h1 class="hero-title">Francis<br><em>Ndiritu</em><br>Thitai</h1>
+    <p class="hero-sub">Turning satellite imagery, spatial data, and machine learning into actionable intelligence. Specializing in GIS, remote sensing, and geospatial AI across East Africa and beyond.</p>
+    <div class="hero-coords">📍 -1.2921° N, 36.8219° E &nbsp;|&nbsp; Kenya &amp; Nairobi &nbsp;|&nbsp; Available Globally</div>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">View Projects</a>
+      <a href="#contact" class="btn btn-outline">Get In Touch</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT + STATS -->
+<section id="about">
+  <div class="section-label">Profile</div>
+  <h2 class="section-title">At a Glance</h2>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num">5+</div>
+      <div class="stat-label">Years in GIS</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">8+</div>
+      <div class="stat-label">Projects Delivered</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4+</div>
+      <div class="stat-label">Countries Covered</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Professional Memberships</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">BSc</div>
+      <div class="stat-label">Geospatial Information Science</div>
+    </div>
+  </div>
+
+  <div class="section-label">Technical Skills</div>
+  <div class="skills-grid">
+    <div class="skill-chip"><span class="skill-dot"></span><span class="skill-name">QGIS / ArcGIS Pro</span></div>
+    <div class="skill-chip"><span class="skill-dot"></span><span class="skill-name">Google Earth Engine</span></div>
+    <div class="skill-chip"><span class="skill-dot"></span><span class="skill-name">Remote Sensing / ENVI</span></div>
+    <div class="skill-chip"><span class="skill-dot"></span><span class="skill-name">TERRSET / Idrisi LCM</span></div>
+    <div class="skill-chip"><span class="skill-dot blue"></span><span class="skill-name">Python</span></div>
+    <div class="skill-chip"><span class="skill-dot blue"></span><span class="skill-name">R Statistical Analysis</span></div>
+    <div class="skill-chip"><span class="skill-dot blue"></span><span class="skill-name">Machine Learning (ML)</span></div>
+    <div class="skill-chip"><span class="skill-dot blue"></span><span class="skill-name">FastAPI / Flask</span></div>
+    <div class="skill-chip"><span class="skill-dot yellow"></span><span class="skill-name">KoboToolbox / ODK</span></div>
+    <div class="skill-chip"><span class="skill-dot yellow"></span><span class="skill-name">OpenStreetMap</span></div>
+    <div class="skill-chip"><span class="skill-dot yellow"></span><span class="skill-name">Mapillary / Mapilio</span></div>
+    <div class="skill-chip"><span class="skill-dot yellow"></span><span class="skill-name">Spatial Database Mgmt</span></div>
+    <div class="skill-chip"><span class="skill-dot"></span><span class="skill-name">Land Cover Change Modeling</span></div>
+    <div class="skill-chip"><span class="skill-dot"></span><span class="skill-name">RUSLE Soil Erosion</span></div>
+    <div class="skill-chip"><span class="skill-dot blue"></span><span class="skill-name">Sentinel-2 Imagery</span></div>
+    <div class="skill-chip"><span class="skill-dot yellow"></span><span class="skill-name">XLSForms / Data Collection</span></div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-label">Employment Record</div>
+  <h2 class="section-title">Work Experience</h2>
+  <div class="exp-list" id="expList">
+
+    <div class="exp-item active" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">GIS Analyst</div>
+          <div class="exp-org">Nova Technologies</div>
+          <div class="exp-country"></div>
+        </div>
+        <div class="exp-period">02/2026 – Current</div>
+      </div>
+      <div class="exp-details">
+        <ul>
+          <li>Conduct geospatial data acquisition, digitization, and spatial database management</li>
+          <li>Ensure compliance with geospatial data standards, coordinate reference systems (CRS), and metadata documentation</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">Global Data Validator</div>
+          <div class="exp-org">Humanitarian OpenStreetMap Team (HOT)</div>
+          <div class="exp-country">Global</div>
+        </div>
+        <div class="exp-period">11/2025 – Current</div>
+      </div>
+      <div class="exp-details">
+        <ul>
+          <li>Validate mapped features (buildings, roads, land use) for accuracy and completeness</li>
+          <li>Ensure adherence to OpenStreetMap tagging standards and mapping guidelines</li>
+          <li>Resolve conflicts between contributors' edits and verify consistency with satellite imagery</li>
+          <li>Approve or invalidate mapping tasks within projects</li>
+          <li>Support capacity building by guiding new contributors and ensuring best practices</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">GIS Project Manager</div>
+          <div class="exp-org">Geospatial Research International (GRI)</div>
+          <div class="exp-country">East, Central & Southern Africa</div>
+        </div>
+        <div class="exp-period">02/2025 – 02/2026</div>
+      </div>
+      <div class="exp-details">
+        <ul>
+          <li>Maintain proper documentation of all data and their sources with organized filing systems</li>
+          <li>Undertake data analysis (tabular, vector, raster) and prepare accurate reports</li>
+          <li>Prepare map products and statistical tables for stakeholder presentations</li>
+          <li>Collect and collate project-related data from maps, satellite imagery, and reports</li>
+          <li>Support other project-related data tasks as assigned by supervisor</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">GIS Intern</div>
+          <div class="exp-org">OpenStreetMap (OSM) Kenya</div>
+          <div class="exp-country">Kenya</div>
+        </div>
+        <div class="exp-period">09/2024 – 12/2024</div>
+      </div>
+      <div class="exp-details">
+        <ul>
+          <li>Data Quality Validation & Assessment – primary focus</li>
+          <li>Collaborative Mapping & Peer Review</li>
+          <li>Application of Data Quality Metrics</li>
+          <li>Hands-on experience using KoboCollect and ODKCollect, building XLSForms from scratch</li>
+          <li>Analyzed attendance and field activity feedback</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item" onclick="toggleExp(this)">
+      <div class="exp-header">
+        <div>
+          <div class="exp-role">GIS Attaché</div>
+          <div class="exp-org">Geosurv System Ltd.</div>
+          <div class="exp-country">Kenya</div>
+        </div>
+        <div class="exp-period">02/2024 – 05/2024</div>
+      </div>
+      <div class="exp-details">
+        <ul>
+          <li>Created GIS-based mapping solutions for environmental and infrastructure projects</li>
+          <li>Processed satellite imagery and performed spatial data analysis using QGIS and ArcGIS</li>
+          <li>Practiced Land Survey and compiled survey plans and deed plans</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-label">Prior Work</div>
+  <h2 class="section-title">Key Projects</h2>
+  <div class="projects-grid">
+
+    <div class="project-card">
+      <div class="project-num">// 01</div>
+      <div class="project-title">PeMOST App — Geospatial AI for Pest Early Warning</div>
+      <div class="project-client">Client: ICIPE</div>
+      <p class="project-desc">Upgraded the PeMOST App by integrating geospatial analytics, crop & pest modeling, and predictive machine learning for Tomato Leaf Miner management in Machakos County, Kenya.</p>
+      <div class="project-tags">
+        <span class="tag">GEE</span>
+        <span class="tag">Python</span>
+        <span class="tag">ML</span>
+        <span class="tag blue">KoboToolbox</span>
+        <span class="tag yellow">Project Mgmt</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">// 02</div>
+      <div class="project-title">Great Rift Valley Land Degradation Impact</div>
+      <div class="project-client">Client: World Resources Institute (WRI)</div>
+      <p class="project-desc">Developed BAU scenario of land degradation and restoration opportunities in the GRV by 2030. Analyzed socioeconomic impacts on food security, income, and poverty. Used LULC mapping and RUSLE analysis.</p>
+      <div class="project-tags">
+        <span class="tag">QGIS</span>
+        <span class="tag">TERRSET LCM</span>
+        <span class="tag blue">GEE / ENVI</span>
+        <span class="tag yellow">RUSLE</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">// 03</div>
+      <div class="project-title">Photo-mapping for Sustainable Mobility in Nakuru</div>
+      <div class="project-client">Client: HOT — Open Mapping Hub ESA</div>
+      <p class="project-desc">Extracted spatial data from high-resolution street-level images using AI-powered tools (Mapillary, Mapilio) integrated with OSM iD editor to enhance map detail and accuracy.</p>
+      <div class="project-tags">
+        <span class="tag">Mapillary</span>
+        <span class="tag">OpenStreetMap</span>
+        <span class="tag blue">AI Mapping</span>
+        <span class="tag yellow">Data Validation</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">// 04</div>
+      <div class="project-title">HOT Tasking Manager — FastAPI Migration Testing</div>
+      <div class="project-client">Client: HOT / NAXA</div>
+      <p class="project-desc">Tested core functionalities of the Tasking Manager application after migrating its backend from Flask to FastAPI, ensuring correctness and stability of all features.</p>
+      <div class="project-tags">
+        <span class="tag">FastAPI</span>
+        <span class="tag blue">QA Testing</span>
+        <span class="tag yellow">OpenStreetMap</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">// 05</div>
+      <div class="project-title">Climate Variability & Maize Crop Growth — ML Modeling</div>
+      <div class="project-client">Client: BMBF (MC2FM Grant 01DG24001)</div>
+      <p class="project-desc">Modeled and predicted effects of climate variability on maize phenology in Muringato Catchment, Nyeri, using Sentinel-2 imagery, vegetation indices, and multivariate regression models.</p>
+      <div class="project-tags">
+        <span class="tag">Sentinel-2</span>
+        <span class="tag">GEE</span>
+        <span class="tag blue">ArcGIS Pro</span>
+        <span class="tag yellow">ML / Python</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-label">Qualifications</div>
+  <h2 class="section-title">Education &amp; Certifications</h2>
+  <div class="edu-grid">
+    <div class="edu-card">
+      <div class="edu-degree">BSc Geospatial Information Science &amp; Remote Sensing</div>
+      <div class="edu-inst">Dedan Kimathi University of Technology</div>
+      <div class="edu-date">September 2021 – January 2025</div>
+    </div>
+    <div class="edu-card">
+      <div class="edu-degree">Certificate in Software Development</div>
+      <div class="edu-inst">Modcom Institute of Technology</div>
+      <div class="edu-date">March 2021 – August 2021</div>
+    </div>
+    <div class="edu-card">
+      <div class="edu-degree">Certified Space Professional</div>
+      <div class="edu-inst">Teaching Science &amp; Technology, Inc. (TSTI)</div>
+      <div class="edu-date">September 2024</div>
+    </div>
+    <div class="edu-card">
+      <div class="edu-degree">Data Analysis with Python</div>
+      <div class="edu-inst">Coursera</div>
+      <div class="edu-date">February 2023</div>
+    </div>
+    <div class="edu-card">
+      <div class="edu-degree">Project Planning and Execution</div>
+      <div class="edu-inst">Coursera</div>
+      <div class="edu-date">February 2023</div>
+    </div>
+  </div>
+
+  <br><br>
+  <div class="section-label">Memberships</div>
+  <div class="skills-grid" style="margin-top:0">
+    <div class="skill-chip"><span class="skill-dot blue"></span><span class="skill-name">Institution of Surveyors of Kenya — GIS Chapter (Member #5570)</span></div>
+    <div class="skill-chip"><span class="skill-dot yellow"></span><span class="skill-name">International Society for Photogrammetry &amp; Remote Sensing (ISPRS)</span></div>
+  </div>
+
+  <br><br>
+  <div class="section-label">Languages</div>
+  <div class="lang-bar">
+    <div class="lang-item">
+      <div class="lang-name">English</div>
+      <div class="lang-dots">
+        <div class="lang-dot"></div><div class="lang-dot"></div><div class="lang-dot"></div>
+        <div class="lang-dot"></div><div class="lang-dot"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Excellent</div>
+    </div>
+    <div class="lang-item">
+      <div class="lang-name">Swahili</div>
+      <div class="lang-dots">
+        <div class="lang-dot"></div><div class="lang-dot"></div><div class="lang-dot"></div>
+        <div class="lang-dot"></div><div class="lang-dot"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Excellent</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">Get In Touch</div>
+  <h2 class="section-title">Contact</h2>
+  <div class="contact-grid">
+    <div class="contact-item">
+      <div class="contact-icon">✉</div>
+      <div>
+        <div class="contact-label">Email</div>
+        <div class="contact-value">francisndiritut01@gmail.com</div>
+      </div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">📞</div>
+      <div>
+        <div class="contact-label">Phone (Kenya)</div>
+        <div class="contact-value">+254 (0) 768 836 667</div>
+      </div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">📡</div>
+      <div>
+        <div class="contact-label">Phone (Somalia)</div>
+        <div class="contact-value">+252 771 277 215</div>
+      </div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">🌍</div>
+      <div>
+        <div class="contact-label">Location</div>
+        <div class="contact-value">Nairobi, Kenya &amp; Mogadishu, Somalia</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 <span>Francis Ndiritu Thitai</span> &nbsp;·&nbsp; Geospatial Analyst &amp; Developer &nbsp;·&nbsp; Nairobi, Kenya</p>
+  <p style="margin-top:8px;font-size:10px;opacity:0.4">🛰 Coordinates: -1.2921°S, 36.8219°E</p>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  });
+
+  // Toggle experience items
+  function toggleExp(el) {
+    const wasActive = el.classList.contains('active');
+    document.querySelectorAll('.exp-item').forEach(i => i.classList.remove('active'));
+    if (!wasActive) el.classList.add('active');
+  }
+
+  // Intersection observer fade-in
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.project-card, .edu-card, .skill-chip, .contact-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
