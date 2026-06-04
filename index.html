@@ -483,16 +483,16 @@
     object-position: center top;
     display: block;
   }
-  /* Default: left half shows left image, right half shows right image */
-  .split-left  { clip-path: inset(0 50% 0 0); }
-  .split-right { clip-path: inset(0 0 0 50%); }
-  /* On hover: left expands to full, right shrinks away */
-  .split-wrap:hover .split-left  { clip-path: inset(0 0% 0 0); }
-  .split-wrap:hover .split-right { clip-path: inset(0 0 0 100%); }
+  /* Default: first image (GIS) fully visible, second image hidden */
+  .split-left  { clip-path: inset(0 0 0 0); z-index: 2; }
+  .split-right { clip-path: inset(0 100% 0 0); z-index: 3; }
+  /* On hover: second image (passport) slides in to fully cover */
+  .split-wrap:hover .split-left  { clip-path: inset(0 0 0 0); }
+  .split-wrap:hover .split-right { clip-path: inset(0 0% 0 0); }
   /* Divider */
   .split-divider {
     position: absolute; top: 0; bottom: 0;
-    left: 50%; width: 2px;
+    left: 100%; width: 2px;
     background: linear-gradient(180deg, transparent, var(--accent), transparent);
     transform: translateX(-50%);
     z-index: 5;
